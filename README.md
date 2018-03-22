@@ -2,10 +2,10 @@
 
 Currently, Ethiopia is one of the fastest-growing economies in the world and
 many import/export business analysts ask is how to find the best overseas market
-to boost a company’s exports/import.
+to boost a company’s imports/exports.
 
 However, it is not easy to find intuitive and descriptive market analysis
-visualizations, make the right decision based on previous data, and predict the
+data to make the right decision based on previous data and predict the
 future market. Therefore, this projects aims to help analysts to find actionable
 insights and make data driven decisions by using machine learning concept.
 
@@ -56,9 +56,7 @@ df=pd.read_csv("C:/Downloads/import_2017_2.csv", encoding = "ISO-8859-1")
 
 #df = pd.read_csv(io.StringIO(uploaded['import_2017_2.csv'].decode('ISO-8859-1')))
 
-#df = df.rename(columns={c: c.replace(' ', '') for c in df.columns}) # Remove spaces from columns
-
-df = df.rename(columns={c: c.replace(' ', '') for c in df.columns})
+df = df.rename(columns={c: c.replace(' ', '') for c in df.columns}) # Remove spaces from columns
 
 #first 5 rows
 df.head(5)
@@ -88,9 +86,9 @@ small_import = total_import[total_import.CIFValueUSD > 300000000].dropna()
 
 big_import = total_import[total_import.CIFValueUSD < 300000000].dropna()
 
-#get number of rows
 
-rows, columns = big_import.shape
+
+rows, columns = big_import.shape # get number of rows
 
 other_countries = (total_import.CIFValueUSD).sum() - (small_import.CIFValueUSD).sum()
 
