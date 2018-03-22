@@ -22,8 +22,7 @@ The project has three major stages:
 4.  Creation of fully automated Artificial Intelligence Analyst System from data
     collection to Generate Market Analysis and Forecasts.
 
-##The first stage (data collection and market visualizations) is stated as
-follows:
+### The first stage (data collection and market visualizations) is stated as follows:
 
 ------
 
@@ -65,6 +64,11 @@ df = df.rename(columns={c: c.replace(' ', '') for c in df.columns})
 df.head(5)
 
 ```
+-----
+
+![](media/df5.PNG)
+
+------
 
 #### Show Import Data in bar chart
 
