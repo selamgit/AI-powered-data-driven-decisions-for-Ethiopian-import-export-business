@@ -55,7 +55,7 @@ export_df=pd.read_csv("C:/export_2017_2.csv", encoding = "ISO-8859-1")
 #export_df = pd.read_csv(io.StringIO(uploaded['Export_2017_2.csv'].decode('ISO-8859-1')))
 
 # Remove spaces from columns
-#export_df = export_df.rename(columns={c: c.replace(' ', '') for c in export_df.columns})
+export_df = export_df.rename(columns={c: c.replace(' ', '') for c in export_df.columns})
 
 export_df = export_df[['Month', 'HSCode', 'FOBValueUSD', 'Destination', 'GrossWt.(Kg)']]
 
@@ -95,13 +95,15 @@ other_countries = (total_export.FOBValueUSD).sum() - (big_export.FOBValueUSD).su
 
 long_export_df = big_export.reset_index()
 
+# label first item
 long_export_df.loc[-1] = ['Other '+str(rows)+' countries' , other_countries]
 
+# avoid old index
 long_export_df = long_export_df.reset_index(drop=True)
 
-export1 = long_export_df.sort_values('FOBValueUSD',ascending=False)
+export_df = long_export_df.sort_values('FOBValueUSD',ascending=False)
 
-export1 = export1.set_index('Destination')
+export_df = export_df.set_index('Destination')
 
 year_total = (total_export.FOBValueUSD).sum()
 
@@ -145,6 +147,7 @@ country_list = big_share["Destination"].unique()
 
 all_country_list = list(big_share.FOBValueUSD)
 
+# append other countries share
 all_country_list.append(others_share)
 
 #print(all_country_list)
@@ -240,7 +243,7 @@ goods_total.head(5)
 
 top_export_goods = goods_total.sort_values('FOBValueUSD',ascending=False).head(5)
 
-# refer HSCode description from WTO DB
+# refer HSCode description from WTO 
 HS_description = ['Coffee & spices', 'OIL SEEDS', 'Live plants','FABRICS', 'Precious Stones']
 
 print("Top 5 Export in 2017:")
