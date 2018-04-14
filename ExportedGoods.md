@@ -1,6 +1,6 @@
 # Analyzing Ethiopian export business using machine learning concept
 
-### Market data visualizations and clustering is stated as follows:
+### Basic Market data visualizations and clustering is stated as follows:
 
 ------
 
@@ -19,29 +19,17 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 
 ## Read csv file locally
-
 export_df=pd.read_csv("C:/export_2017_2.csv", encoding = "ISO-8859-1")
 
-import_df=pd.read_csv("C://import_2017_2.csv", encoding = "ISO-8859-1")
-
-## Read from github
-
-#url =
-'https://github.com/selamgit/AI-powered-data-driven-decisions-for-Ethiopian-Export-export-business/upload/master/Export_2017_2.csv'
-
-#export_df = pd.read_csv(io.StringIO(url))
-
 ## Read csv file from colab.research.google
-
 #export_df = pd.read_csv(io.StringIO(uploaded['Export_2017_2.csv'].decode('ISO-8859-1')))
 
+# Remove spaces from columns
 #export_df = export_df.rename(columns={c: c.replace(' ', '') for c in export_df.columns})
 
-export_df = export_df[['Month', 'HSCode', 'FOBValueUSD', 'Destination',
-'GrossWt.(Kg)']]
+export_df = export_df[['Month', 'HSCode', 'FOBValueUSD', 'Destination', 'GrossWt.(Kg)']]
 
 # show first 5 rows
-
 import_df.head(5)
 
 ```
@@ -52,12 +40,11 @@ import_df.head(5)
 
 ------
 
-#### Show Import Data in bar chart
+#### Show Export Data in bar chart
 
 ```python
 
 ##For bar chart select columns
-
 country_value = export_df[['Destination','FOBValueUSD']]
 
 country_group = country_value.groupby('Destination')
@@ -66,8 +53,9 @@ country_group.size()
 
 total_export = country_group.sum()
 
+# Let say values greator than 50000000 is big share
 big_export = total_export[total_export.FOBValueUSD > 50000000].dropna()
-
+# Let say values less than 50000000 is small share
 small_export = total_export[total_export.FOBValueUSD < 50000000].dropna()
 
 #get number of rows
@@ -87,8 +75,7 @@ export1 = export1.set_index('Destination')
 
 year_total = (total_export.FOBValueUSD).sum()
 
-my_plot = export1.plot(fontsize=18,figsize=(12, 6),kind='bar',title="Ethiopian
-Total Export in 2017($2.86B worth of exported products)", color="green")
+my_plot = export1.plot(fontsize=18,figsize=(12, 6),kind='bar',title="Ethiopian Total Export in 2017($2.86B worth of exported products)", color="green")
 
 my_plot.legend(["Total FREE ON BOARD (FOB) Cost"],loc=9, ncol=4,fontsize=18)
 
@@ -104,7 +91,7 @@ my_plot.set_ylabel("Total Value (Million USD)",fontsize=22)
 
 ------
 
-#### Show Import Market Share by Country
+#### Show Exported Market Share by Country
 
 ```python
 
@@ -154,8 +141,7 @@ explod = explod_lst
 
 fig1, ax1 = plt.subplots()
 
-ax1.pie(all_country_list, labels=country_labels, explode=explod,
-autopct='%1.1f%%',shadow=True, startangle=45)
+ax1.pie(all_country_list, labels=country_labels, explode=explod, autopct='%1.1f%%',shadow=True, startangle=45)
 
 ax1.axis('equal') # Equal aspect ratio ensures that pie is drawn as a circle.
 
@@ -171,7 +157,7 @@ plt.show()
 
 ------
 
-#### Show imported values per months
+#### Show exported values per months
 
 ```python
 
@@ -205,18 +191,16 @@ plt.show()
 
 ------
 
-#### Show top 5 traded goods
+#### Show top 5 exported goods
 
 ```python
 
-## Top 5 Traded goods
+## Top 5 exported goods
 
 goods_exported = export_df[['HSCode', 'FOBValueUSD']]
 
 ## get first 5 hscode
 goods_group = goods_exported.groupby(goods_exported.HSCode.astype(str).str[:5])
-
-#goods_group = goods_exported.groupby('HSCode')
 
 goods_group.size()
 
@@ -226,8 +210,8 @@ goods_total.head(5)
 
 top_export_goods = goods_total.sort_values('FOBValueUSD',ascending=False).head(5)
 
-HS_description = ['Coffee & spices', 'OIL SEEDS', 'Live plants','FABRICS',
-'Precious Stones']
+# refer HSCode description from WTO DB
+HS_description = ['Coffee & spices', 'OIL SEEDS', 'Live plants','FABRICS', 'Precious Stones']
 
 print("Top 5 Export in 2017:")
 
@@ -237,15 +221,13 @@ print(top_export_goods)
 
 fig1, ax1 = plt.subplots()
 
-ax1.pie(top_export_goods.FOBValueUSD, labels=HS_description,
-autopct='%1.1f%%',shadow=True, startangle=90)
+ax1.pie(top_export_goods.FOBValueUSD, labels=HS_description, autopct='%1.1f%%',shadow=True, startangle=90)
 
-ax1.axis('equal') \# Equal aspect ratio ensures that pie is drawn as a circle.
+ax1.axis('equal') # Equal aspect ratio ensures that pie is drawn as a circle.
 
 ax1.set_title('Top 5 Exported Goods in 2017 (Goods share)')
 
 #draw a circle at the center of pie to make it look like a donut
-
 centre_circle = plt.Circle((0,0),0.75,color='black', fc='white',linewidth=1.25)
 
 fig = plt.gcf()
@@ -253,7 +235,6 @@ fig = plt.gcf()
 fig.gca().add_artist(centre_circle)
 
 # Set aspect ratio to be equal so that pie is drawn as a circle.
-
 plt.axis('equal')
 
 plt.show()
@@ -266,11 +247,11 @@ plt.show()
 
 ------
 
-\#\#\#\# Show traded goods by weight in kg
+#### Show exported goods by weight in kg
 
 ```python
 
-## Traded goods in kg
+## Exported goods in kg
 
 goods_exported = export_df[['Destination','GrossWt.(Kg)']]
 
@@ -286,8 +267,7 @@ top_export_goods = goods_total.sort_values('GrossWt.(Kg)',ascending=False).head(
 
 print(top_export_goods)
 
-my_plot = top_export_goods.plot(fontsize=18,figsize=(12,
-6),kind='bar',title="Ethiopian Total Export in 2017 in Weight(KG)",
+my_plot = top_export_goods.plot(fontsize=18,figsize=(12, 6),kind='bar',title="Ethiopian Total Export in 2017 in Weight(KG)",
 color="black")
 
 my_plot.legend(["GrossWt.(Kg)"],loc=9, ncol=4,fontsize=18)
@@ -313,7 +293,6 @@ my_plot.set_ylabel("GrossWt.(Kg)",fontsize=22)
 goods_exported = export_df[['HSCode','GrossWt.(Kg)', 'FOBValueUSD']]
 
 # Getting the values and plotting it
-
 f1 = goods_exported['GrossWt.(Kg)'].values
 
 f2 = goods_exported['FOBValueUSD'].values
@@ -331,25 +310,22 @@ plt.show()
 ![](media/ead0d27b8e6487e541da9c12c331247d.png)
 
 ------
+####  Set number of clusters
 
 ```python
 
 # Euclidean Distance Caculator
-
 def dist(a, b, ax=1):
 
 return np.linalg.norm(a - b, axis=ax)
 
 # Set number of clusters
-
 k = 3
 
 # X coordinates of random centroids
-
 C_x = np.random.randint(0, np.max(X)-20, size=k)
 
 # Y coordinates of random centroids
-
 C_y = np.random.randint(0, np.max(X)-20, size=k)
 
 C = np.array(list(zip(C_x, C_y)), dtype=np.float32)
@@ -357,23 +333,18 @@ C = np.array(list(zip(C_x, C_y)), dtype=np.float32)
 print(C)
 
 # To store the value of centroids when it updates
-
 C_old = np.zeros(C.shape)
 
 # Cluster Lables(0, 1, 2)
-
 clusters = np.zeros(len(X))
 
 # Error func. - Distance between new centroids and old centroids
-
 error = dist(C, C_old, None)
 
 # Loop will run till the error becomes zero
-
 while error != 0:
 
 # Assigning each value to its closest cluster
-
 for i in range(len(X)):
 
 distances = dist(X[i], C)
@@ -383,11 +354,9 @@ cluster = np.argmin(distances)
 clusters[i] = cluster
 
 # Storing the old centroid values
-
 C_old = deepcopy(C)
 
 # Finding the new centroids by taking the average value
-
 for i in range(k):
 
 points = [X[j] for j in range(len(X)) if clusters[j] == i]
@@ -406,7 +375,7 @@ points = np.array([X[j] for j in range(len(X)) if clusters[j] == i])
 
 ax.scatter(points[:, 0], points[:, 1], s=7, c=colors[i])
 
-ax.scatter(C[:, 0], C[:, 1], marker='\*', s=200, c='\#050505')
+ax.scatter(C[:, 0], C[:, 1], marker='*', s=200, c='#050505')
 
 ```
 
