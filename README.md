@@ -21,9 +21,12 @@ The project has three major stages:
 
 4.  Creation of fully automated Artificial Intelligence Analyst System from data
     collection to Generate Market Analysis and Forecasts.
+    
+- [Exported data analysis](https://github.com/selamgit/AI-powered-data-driven-decisions-for-Ethiopian-import-export-business/blob/master/ExportedGoods.md)
+- [Imported data analysis](https://github.com/selamgit/AI-powered-data-driven-decisions-for-Ethiopian-import-export-business/blob/master/ImportedGoods.md)
 
 ### The first stage (data collection and market visualizations) is stated as follows:
-
+### At the end basic k-means clustering is also included:
 ------
 
 ### Prerequisites
@@ -31,6 +34,7 @@ The project has three major stages:
 PYTHON 3.6
 
 ### Let’s start
+
 
 #### PYTHON command line
 
@@ -42,120 +46,110 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from copy import deepcopy
+
 ## Read csv file locally
-
-df=pd.read_csv("C:/Downloads/import_2017_2.csv", encoding = "ISO-8859-1")
-
-## Read from github
-
-#url = 'https://github.com/selamgit/AI-powered-data-driven-decisions-for-Ethiopian-import-export-business/upload/master/import_2017_2.csv'
-
-#df = pd.read_csv(io.StringIO(url))
+export_df=pd.read_csv("C:/export_2017_2.csv", encoding = "ISO-8859-1")
 
 ## Read csv file from colab.research.google
-
-#df = pd.read_csv(io.StringIO(uploaded['import_2017_2.csv'].decode('ISO-8859-1')))
+#export_df = pd.read_csv(io.StringIO(uploaded['Export_2017_2.csv'].decode('ISO-8859-1')))
 
 # Remove spaces from columns
-df = df.rename(columns={c: c.replace(' ', '') for c in df.columns}) 
+#export_df = export_df.rename(columns={c: c.replace(' ', '') for c in export_df.columns})
 
-df = df[['Month', 'CIFValueUSD', 'CountryOrigin']]
+export_df = export_df[['Month', 'HSCode', 'FOBValueUSD', 'Destination', 'GrossWt.(Kg)']]
 
-#first 5 rows
-df.head(5)
+# show first 5 rows
+import_df.head(5)
 
 ```
+
 -----
 
-![](media/df5.PNG)
+![](media/308b46e988e7b8d3ae68110b3223ca2c.png)
 
 ------
 
-#### Show Import Data in bar chart
+#### Show Export Data in bar chart
 
 ```python
 
-##For bar chart - select columns
+##For bar chart select columns
+country_value = export_df[['Destination','FOBValueUSD']]
 
-country_value = df[['CountryOrigin','CIFValueUSD']]
-
-country_group = country_value.groupby('CountryOrigin')
+country_group = country_value.groupby('Destination')
 
 country_group.size()
 
-total_import = country_group.sum()
+total_export = country_group.sum()
 
-big_import = total_import[total_import.CIFValueUSD > 300000000].dropna()
+# Let say values greator than 50000000 is big share
+big_export = total_export[total_export.FOBValueUSD > 50000000].dropna()
+# Let say values less than 50000000 is small share
+small_export = total_export[total_export.FOBValueUSD < 50000000].dropna()
 
-small_import= total_import[total_import.CIFValueUSD < 300000000].dropna()
+#get number of rows
+rows, columns = small_export.shape
 
+other_countries = (total_export.FOBValueUSD).sum() - (big_export.FOBValueUSD).sum()
 
-# get number of rows
-rows, columns = small_import.shape 
+long_export_df = big_export.reset_index()
 
-other_countries = (total_import.CIFValueUSD).sum() - (big_import.CIFValueUSD).sum()
+long_export_df.loc[-1] = ['Other '+str(rows)+' countries' , other_countries]
 
-long_df = big_import.reset_index()
+long_export_df = long_export_df.reset_index(drop=True)
 
-long_df.loc[-1] = ['Other '+str(rows)+' countries' , other_countries]
+export1 = long_export_df.sort_values('FOBValueUSD',ascending=False)
 
-long_df = long_df.reset_index(drop=True)
+export1 = export1.set_index('Destination')
 
-import1 = long_df.sort_values('CIFValueUSD',ascending=False)
+year_total = (total_export.FOBValueUSD).sum()
 
-import1 = import1.set_index('CountryOrigin')
+my_plot = export1.plot(fontsize=18,figsize=(12, 6),kind='bar',title="Ethiopian Total Export in 2017($2.86B worth of exported products)", color="green")
 
-year_total = (total_import.CIFValueUSD).sum()
+my_plot.legend(["Total FREE ON BOARD (FOB) Cost"],loc=9, ncol=4,fontsize=18)
 
-# bar chart ploting
-my_plot = import1.plot(fontsize=18,figsize=(12, 9),kind='bar',title="Ethiopian
-Total Import in 2017($15B worth of imported products)")
+my_plot.set_xlabel("Exported Country",fontsize=22)
 
-my_plot.legend(["Total Cost, Insurance and Freight (CIF)"],loc=9,
-ncol=4,fontsize=18)
-
-my_plot.set_xlabel("Imported Country",fontsize=22)
-
-my_plot.set_ylabel("Total Value (Billion USD)",fontsize=22)
+my_plot.set_ylabel("Total Value (Million USD)",fontsize=22)
 
 ```
 
 -----
 
-![](media/f0bf772daecf1b836eb590a19981f9cb.png)
+![](media/9cf180b1185ca965806c205ce43cbddd.png)
 
 ------
 
-#### Show Import Market Share by Country
+#### Show Exported Market Share by Country
 
 ```python
 
 ## Use pie chart to show market share by country
+country_share_value = export_df[['Destination','FOBValueUSD']]
 
-country_share_value = df[['CountryOrigin','CIFValueUSD']]
-
-country_share_group = country_share_value.groupby('CountryOrigin',as_index = False)
+country_share_group = country_share_value.groupby('Destination',as_index = False)
 
 country_share_group.size()
 
 total_country_share = country_share_group.sum()
 
-big_share = total_country_share[total_country_share.CIFValueUSD > 300000000].dropna()
+# Let say values greator than 80000000 is big share
+big_share = total_country_share[total_country_share.FOBValueUSD > 80000000].dropna()
+# Let say values less than 80000000 is small share
+small_share = total_country_share[total_country_share.FOBValueUSD < 80000000].dropna()
 
-small_share = total_country_share[total_country_share.CIFValueUSD < 300000000].dropna()
+others_share = (total_country_share.FOBValueUSD).sum() - (big_share.FOBValueUSD).sum()
 
-others_share = (total_country_share.CIFValueUSD).sum() - (big_share.CIFValueUSD).sum()
+country_list = big_share["Destination"].unique()
 
-country_list = big_share["CountryOrigin"].unique()
-
-all_country_list = list(big_share.CIFValueUSD)
+all_country_list = list(big_share.FOBValueUSD)
 
 all_country_list.append(others_share)
 
 #print(all_country_list)
 
-# get number of rows
-rows, columns = small_share.shape 
+rows, columns = small_share.shape # get number of rows
 
 lst = list(country_list)
 
@@ -163,30 +157,25 @@ lst.append('Other '+str(rows)+' countries')
 
 country_labels = np.asarray(lst)
 
-# get length of the list
-lst_number = len(country_labels) 
+lst_number = len(country_labels) # get length of the list
 
 explod_lst = ([i for i in range(lst_number-1)])
 
-# to make them all zero, multiply all integers inside the list by 0
-explod_lst = [x * 0 for x in explod_lst] 
+explod_lst = [x * 0 for x in explod_lst] # multiply all integers inside list by 0
 
-# insert explod index
-explod_lst.insert(0, 0.1) 
+explod_lst.insert(1, 0.1) # insert explod index
 
-# convert it into tuple
-tuple(explod_lst) 
+tuple(explod_lst) # convert it into tuple
 
 explod = explod_lst
 
-# pie chart ploting
 fig1, ax1 = plt.subplots()
 
-ax1.pie(all_country_list, labels=country_labels, explode=explod, autopct='%1.1f%%',shadow=True, startangle=180)
+ax1.pie(all_country_list, labels=country_labels, explode=explod, autopct='%1.1f%%',shadow=True, startangle=45)
 
 ax1.axis('equal') # Equal aspect ratio ensures that pie is drawn as a circle.
 
-ax1.set_title('Ethiopian Total Import in 2017 (Imported countries share)')
+ax1.set_title('Ethiopian Total Export in 2017 (Exported countries share)')
 
 plt.show()
 
@@ -194,17 +183,17 @@ plt.show()
 
 ------
 
-![](media/d536374b0713e16b134617a312e1ff04.png)
+![](media/5b27059ebd6c356ea8a6bc5a7468ce2b.png)
 
 ------
 
-#### Show imported values per months
+#### Show exported values per months
 
 ```python
 
-##For line chart - show imported values per months
+##For line chart - show Exported values per months
 
-monthly_value = df[['Month','CIFValueUSD']]
+monthly_value = export_df[['Month','FOBValueUSD']]
 
 month_group = monthly_value.groupby('Month')
 
@@ -212,13 +201,13 @@ month_group.size()
 
 month_totals = month_group.sum()
 
-plt.plot(month_totals)
+plt.plot(month_totals, "g-")
 
 plt.xlabel('month (s)')
 
 plt.ylabel('Total Value (Million USD)')
 
-plt.title('Ethiopian Total Import in 2017($15B worth of imported products)')
+plt.title('Ethiopian Total Export in 2017($2.86B worth of Exported products)')
 
 plt.grid(True)
 
@@ -228,7 +217,201 @@ plt.show()
 
 ------
 
-![](media/fda846d10cf74bcdc44e51d8382d64f3.png)
+![](media/e269084a84e2c72fad36b22e6c8f24d3.png)
+
+------
+
+#### Show top 5 exported goods
+
+```python
+
+## Top 5 exported goods
+
+goods_exported = export_df[['HSCode', 'FOBValueUSD']]
+
+## get first 5 hscode
+goods_group = goods_exported.groupby(goods_exported.HSCode.astype(str).str[:5])
+
+goods_group.size()
+
+goods_total = goods_group.sum()
+
+goods_total.head(5)
+
+top_export_goods = goods_total.sort_values('FOBValueUSD',ascending=False).head(5)
+
+# refer HSCode description from WTO DB
+HS_description = ['Coffee & spices', 'OIL SEEDS', 'Live plants','FABRICS', 'Precious Stones']
+
+print("Top 5 Export in 2017:")
+
+top_export_goods['HS Description'] = HS_description
+
+print(top_export_goods)
+
+fig1, ax1 = plt.subplots()
+
+ax1.pie(top_export_goods.FOBValueUSD, labels=HS_description, autopct='%1.1f%%',shadow=True, startangle=90)
+
+ax1.axis('equal') # Equal aspect ratio ensures that pie is drawn as a circle.
+
+ax1.set_title('Top 5 Exported Goods in 2017 (Goods share)')
+
+#draw a circle at the center of pie to make it look like a donut
+centre_circle = plt.Circle((0,0),0.75,color='black', fc='white',linewidth=1.25)
+
+fig = plt.gcf()
+
+fig.gca().add_artist(centre_circle)
+
+# Set aspect ratio to be equal so that pie is drawn as a circle.
+plt.axis('equal')
+
+plt.show()
+
+```
+
+------
+
+![](media/b887deeb9f03c185904c212fb5b3a5dc.png)
+
+------
+
+#### Show exported goods by weight in kg
+
+```python
+
+## Exported goods in kg
+
+goods_exported = export_df[['Destination','GrossWt.(Kg)']]
+
+goods_group = goods_exported.groupby(goods_exported.Destination)
+
+goods_group.size()
+
+goods_total = goods_group.sum()
+
+goods_total.head(5)
+
+top_export_goods = goods_total.sort_values('GrossWt.(Kg)',ascending=False).head(10)
+
+print(top_export_goods)
+
+my_plot = top_export_goods.plot(fontsize=18,figsize=(12, 6),kind='bar',title="Ethiopian Total Export in 2017 in Weight(KG)",
+color="black")
+
+my_plot.legend(["GrossWt.(Kg)"],loc=9, ncol=4,fontsize=18)
+
+my_plot.set_xlabel("Destination",fontsize=22)
+
+my_plot.set_ylabel("GrossWt.(Kg)",fontsize=22)
+
+```
+
+------
+
+![](media/b92cb4626f27155af7bd9510fb7a529d.png)
+
+------
+
+#### K-Means Clustering
+
+```python
+
+## show data set
+
+goods_exported = export_df[['HSCode','GrossWt.(Kg)', 'FOBValueUSD']]
+
+# Getting the values and plotting it
+f1 = goods_exported['GrossWt.(Kg)'].values
+
+f2 = goods_exported['FOBValueUSD'].values
+
+X = np.array(list(zip(f1, f2)))
+
+plt.scatter(f1, f2, c='black', s=7)
+
+plt.show()
+
+```
+
+------
+
+![](media/ead0d27b8e6487e541da9c12c331247d.png)
+
+------
+####  Set number of clusters
+
+```python
+
+# Euclidean Distance Caculator
+def dist(a, b, ax=1):
+
+return np.linalg.norm(a - b, axis=ax)
+
+# Set number of clusters
+k = 3
+
+# X coordinates of random centroids
+C_x = np.random.randint(0, np.max(X)-20, size=k)
+
+# Y coordinates of random centroids
+C_y = np.random.randint(0, np.max(X)-20, size=k)
+
+C = np.array(list(zip(C_x, C_y)), dtype=np.float32)
+
+print(C)
+
+# To store the value of centroids when it updates
+C_old = np.zeros(C.shape)
+
+# Cluster Lables(0, 1, 2)
+clusters = np.zeros(len(X))
+
+# Error func. - Distance between new centroids and old centroids
+error = dist(C, C_old, None)
+
+# Loop will run till the error becomes zero
+while error != 0:
+
+# Assigning each value to its closest cluster
+for i in range(len(X)):
+
+distances = dist(X[i], C)
+
+cluster = np.argmin(distances)
+
+clusters[i] = cluster
+
+# Storing the old centroid values
+C_old = deepcopy(C)
+
+# Finding the new centroids by taking the average value
+for i in range(k):
+
+points = [X[j] for j in range(len(X)) if clusters[j] == i]
+
+C[i] = np.mean(points, axis=0)
+
+error = dist(C, C_old, None)
+
+colors = ['r', 'g', 'b', 'y', 'c', 'm']
+
+fig, ax = plt.subplots()
+
+for i in range(k):
+
+points = np.array([X[j] for j in range(len(X)) if clusters[j] == i])
+
+ax.scatter(points[:, 0], points[:, 1], s=7, c=colors[i])
+
+ax.scatter(C[:, 0], C[:, 1], marker='*', s=200, c='#050505')
+
+```
+
+------
+
+![](media/aa47e48c5ccf65786a60b71346ac24cc.png)
 
 ------
 
